@@ -23,7 +23,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 
 public class UNV {
-	
+
 	private File file;
 	@SuppressWarnings("unused")
 	private String header="";
@@ -70,7 +70,7 @@ public class UNV {
 		switch(ns.get("action").toString())
 		{
 		case "mesh":
-			System.out.println("Export Mesh from "+args[1]);
+			System.out.println("Export Mesh from "+ns.get("unvFile").toString());
 			data.writeCoordinate();
 			data.writeElements();
 			break;
@@ -81,8 +81,8 @@ public class UNV {
 				      StandardCopyOption.COPY_ATTRIBUTES
 				    }; 
 			try {
-				Files.copy(Paths.get(f.getPath()), Paths.get(f.getParent()+"\\"+args[6]+".unv"),options);
-				System.out.println(f.getParent()+"\\"+args[6]+".unv has been created");
+				Files.copy(Paths.get(f.getPath()), Paths.get(f.getParent()+"\\"+ns.get("output-name").toString()+".unv"),options);
+				System.out.println(f.getParent()+"\\"+ns.get("output-name").toString()+".unv has been created");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
