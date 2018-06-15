@@ -15,6 +15,12 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
+
 
 public class UNV {
 	
@@ -27,18 +33,48 @@ public class UNV {
 	public ArrayList<Field> fields = new ArrayList<>();
 	
 	public static void main(String[] args) {
+		
+		ArgumentParser parser = ArgumentParsers.newFor("UNV parsing tool").build()
+                .defaultHelp(true)
+                .description("Read and extract data from an UNV File");
+        parser.addArgument("-a", "--action")
+                .help("What do you want to do ???")
+                .choices("mesh", "replace", "extract","field")
+                .setDefault("mesh");
+        parser.addArgument("-r", "--replace-ID")
+        		.help("Replace the Field ID x by the data in the replacing file")
+        		.setDefault(Arguments.SUPPRESS);
+        parser.addArgument("--replace-file")
+				.help("Replace the Field ID x by the data in the replacing file")
+				.setDefault(Arguments.SUPPRESS);
+        parser.addArgument("-o","--output-name")
+				.help("Output name for the new unv file")
+				.setDefault(Arguments.SUPPRESS);
+        parser.addArgument("-d", "--data-ID")
+				.help("Retrieve de data Field #ID into a CSV file")
+				.setDefault(Arguments.SUPPRESS);
+        parser.addArgument("unvFile")
+                .help("path to the unvFile");
 
-		File f = new File(args[1]);
+        Namespace ns = null;
+        try {
+            ns = parser.parseArgs(args);
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
+            System.exit(1);
+        }
+		
+		File f = new File(ns.get("unvFile").toString());
 		UNV data = new UNV(f);
 				
-		switch(args[0])
+		switch(ns.get("action").toString())
 		{
-		case "-m":
+		case "mesh":
 			System.out.println("Export Mesh from "+args[1]);
 			data.writeCoordinate();
 			data.writeElements();
 			break;
-		case "-r":
+		case "replace":
 			
 			CopyOption[] options = new CopyOption[]{
 				      StandardCopyOption.REPLACE_EXISTING,
@@ -51,20 +87,26 @@ public class UNV {
 				e.printStackTrace();
 			}
 			
-			System.out.println("Replace field ID "+args[3]+" from "+args[1]+" by "+args[2]);
-			data.replaceField(Integer.parseInt(args[3]),args[2]);
-			System.out.println("Replace field ID "+args[5]+" from "+args[1]+" by "+args[4]);
-			data.replaceField(Integer.parseInt(args[5]),args[4]);
-			data.writeUNV(args[6]);
+			System.out.println("Replace field ID "+ns.get("replace_ID").toString()+" from "+ns.get("unvFile").toString()+" by "+ns.get("replace_file").toString());
+			data.replaceField(Integer.parseInt(ns.get("replace_ID").toString()),ns.get("replace_file").toString());
+			data.writeUNV(ns.get("output-name").toString());
 			break;
-		case "-d": // Retrieve data into an CSV file -d file ID
+		case "extract": // Retrieve data into an CSV file -d file ID
 			
-			System.out.println("Exporting data ID "+args[2]+" from "+args[1]);
-			data.writeData(Integer.parseInt(args[2]));
+			System.out.println("Exporting data ID "+ns.get("data_ID").toString()+" from "+ns.get("unvFile").toString());
+			data.writeData(Integer.parseInt(ns.get("data_ID").toString()));
+			break;
+		case "field":
+			System.out.println(data.getListField());
+			break;
+		default:
+			System.out.println("Sorry unknown action. Please refer to the help with -h");
 			break;
 		}
+		
 	}
-	
+
+
 	public UNV(File file)
 	{
 		this.file = file;
@@ -269,4 +311,7 @@ public class UNV {
     	this.fields.get(label).setValues(content);
     	
     }
+	public String getListField() {
+		return this.fields.stream().map(field -> field.getIdField()+"-"+field.getName()).collect(Collectors.joining("\n"));
+	}
 }
