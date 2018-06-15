@@ -1,0 +1,16 @@
+# Unwanted File & Working file #
+################################
+/bin/
+/data/*
+/META-INF/*
+/VTF/*
+
+
+# Unwanted File type #
+######################
+
+*.vtf
+*.txt
+*.csv
+*.poly
+*.unv
