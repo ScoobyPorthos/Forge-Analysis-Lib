@@ -10,6 +10,7 @@ public class Filter {
 		this.mySelection = mySelection;
 	}
 	
+	@SuppressWarnings("unlikely-arg-type") //TODO fix the type issue 
 	public boolean valid(Line l){
 		// retourne vraie si la ligne contient la valeur à la colonne demandée
 		boolean res = true;
@@ -18,6 +19,7 @@ public class Filter {
 		
 		for(String key :keys)
 		{
+			
 			String value =((l.getStringValue(key)!=null)? l.getStringValue(key):Double.toString(l.getDoubleValue(key)));
 			if(this.mySelection.values().contains(value) && res)
 				res=true;

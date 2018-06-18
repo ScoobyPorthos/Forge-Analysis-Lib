@@ -1,26 +1,22 @@
 package parseVTF;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
-//import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-//import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-//import java.util.function.Supplier;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-//import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-public class VTF {
+public class VTF implements Cloneable{
 
 	public static void main(String[] args) {
 
@@ -92,19 +88,26 @@ public class VTF {
 		this.file = file;
 		this.readFile();
 	}
+	
+	public VTF clone() throws CloneNotSupportedException {
+        return (VTF) super.clone();
+    }
+	
 	public File getFile() {
 		return this.file;
 	}
 	private void readFile()
 	{
-		FileReader fr;
+		FileInputStream inputStream = null;
+		Scanner sc = null;
 		try {
-			fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
+			inputStream = new FileInputStream(file.getAbsolutePath());
+			sc = new Scanner(inputStream, "UTF-8");
 		    
 		    int i = 0;
 		    int action = 0;
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
+		    while (sc.hasNextLine()){
+		    	String line = sc.nextLine();
 				switch(action)
 				{
 				case 1:
@@ -131,13 +134,9 @@ public class VTF {
 					action = 0;
 				
 		    }
-		        br.close();
-		        fr.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} 
 	}
 	/*private void exctractType(String line)
 	{
