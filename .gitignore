@@ -4,7 +4,7 @@
 /data/*
 /META-INF/*
 /VTF/*
-
+/src/
 
 # Unwanted File type #
 ######################
@@ -14,4 +14,3 @@
 *.csv
 *.poly
 *.unv
-/src/
