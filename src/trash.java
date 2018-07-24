@@ -16,8 +16,8 @@ import java.util.stream.IntStream;
 public class trash {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		String folder ="D:\\Users\\Scooby\\Documents\\ETS\\LFW\\1.3 - Forge\\vtf\\McA2015a_27_6750\\Friction_DRX-110618#1-Center";
+		
+		String folder ="C:\\Users\\ap19140\\Documents\\Recherche_SB\\LFW_McAndrew.tsv\\Analysis\\ResultDataBase\\14_McA2015a_27_6750-Friction_DRX-ND_failed_3\\results\\mca2015a_27_6750-friction_drx-nd.res";
 		int start_file_num = 54;
 		
 		
@@ -26,7 +26,7 @@ public class trash {
 		
 		String res = files.stream().map(file -> trash.getLine(file, 30720-1, Arrays.asList(3,5,7))).collect(Collectors.joining("\n"));
 		
-		FileWriter fr;
+		/*FileWriter fr;
 		try {
 			fr = new FileWriter(folder+"\\End_Temperature.csv");
 			fr.write("X,Z,T");
@@ -36,7 +36,7 @@ public class trash {
 	        System.out.println(folder+"\\End_Temperature.csv");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}    
+		} */
 		
 	}
 	
