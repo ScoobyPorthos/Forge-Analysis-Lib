@@ -1,10 +1,13 @@
 package traitement;
 
+
 import java.io.File;
+
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,7 +18,6 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-
 import parseVTF.VTF;
 
 public class Results {
@@ -61,7 +63,7 @@ public class Results {
 		this.selection = selection;
 		this.loadFile();
 	}
-	private void loadFile()
+	private void loadFile() // TODO Fix this to have a better efficency !!!!
 	{
 		File[] results;
 
@@ -73,9 +75,6 @@ public class Results {
 												return name.toLowerCase().endsWith(".vtf");
 											}
 										});
-						
-			System.out.println(this.dir.listFiles().length);
-			System.exit(1);
 			
 			Arrays.sort(results,new Comparator<File>(){
 								@Override
@@ -91,22 +90,28 @@ public class Results {
 								}});
 			
 			this.loadReference(results[0]);
+
+			VTF res = null;
+			VTF data = null;
 			for(Integer s:this.selection)
 			{
-				System.out.println("ID "+s.toString()+" is loading ...");
-				VTF res = new VTF();
-				res.addColumns(this.reference.getColumn());
+				
+				res = this.reference.clone();
+				System.out.println("Extacting ID "+s+" ...");
+				
 				ArrayList<Integer> select = new ArrayList<>();
 				select.add(s);
-				VTF data = new VTF();
+				
 				for(File file:results)
 				{
-					data = new VTF(file,select);
+					System.out.println("\t + "+file.getName());
+					data = new VTF(file,new ArrayList<>(Arrays.asList(s)));
 					res.addColumns(data.getColumn());
-					System.out.println("\t + "+file.getName()+" has been loaded [x]");
 				}
-				String filename = data.getSubjects().stream().map(e -> e.replaceAll("\"", "")).collect(Collectors.joining(" VS "));
-				res.save(this.dir.getPath()+"\\"+filename+".csv");
+				
+				res.save(this.dir.getPath()+"\\"+this.reference.getSubjects().stream().map(e -> e.replaceAll("\"", "")).collect(Collectors.joining("_"))+s+".csv");
+				
+				System.out.println("\t => ID "+s+" extracted in "+this.reference.getSubjects().stream().map(e -> e.replaceAll("\"", "")).collect(Collectors.joining("_"))+s+".csv");
 			}
 			System.out.println("Finished ! ");
 
