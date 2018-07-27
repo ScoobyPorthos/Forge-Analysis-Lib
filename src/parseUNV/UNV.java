@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -94,7 +95,10 @@ public class UNV {
 		case "extract": // Retrieve data into an CSV file -d file ID
 			
 			System.out.println("Exporting data ID "+ns.get("data_ID").toString()+" from "+ns.get("unvFile").toString());
-			data.writeData(Integer.parseInt(ns.get("data_ID").toString()));
+			if(ns.get("data_ID").toString().split(",").length>1)
+				data.writeData(ns.get("data_ID").toString().split(","));
+			else
+				data.writeData(Integer.parseInt(ns.get("data_ID").toString()));
 			break;
 		case "field":
 			System.out.println(data.getListField());
@@ -283,6 +287,11 @@ public class UNV {
 		}
     	System.out.println(name+" written");
     	
+    }
+    public void writeData(String[] ID)
+    {
+    	for(String id:ID)
+    		this.writeData(Integer.parseInt(id));
     }
     public void replaceField(int label, String file)
     {

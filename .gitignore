@@ -1,6 +1,8 @@
 # Unwanted File & Working file #
 ################################
 /bin/
+/.metadata/*
+/.settings/*
 /data/*
 /META-INF/*
 /VTF/*
@@ -14,3 +16,4 @@
 *.csv
 *.poly
 *.unv
+*.classpath
