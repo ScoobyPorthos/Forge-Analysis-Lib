@@ -226,6 +226,6 @@ public class VTF implements Cloneable{
 	}
 	public void getData()
 	{
-		System.out.println(IntStream.range(0, this.subjects.size()).mapToObj(i -> i+" -> "+this.getSubjects().get(i).substring(1, this.getSubjects().get(i).length()-1)).collect(Collectors.joining("\n")));
+		System.out.println(IntStream.range(0, this.subjects.size()).mapToObj(i -> (i+1)+" -> "+this.getSubjects().get(i).substring(1, this.getSubjects().get(i).length()-1)).collect(Collectors.joining("\n")));
 	}
 }
