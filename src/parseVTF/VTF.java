@@ -64,8 +64,8 @@ public class VTF implements Cloneable{
     			}
     			break;
     		case "variablesNames":
-    			Results variableNames = new Results(new File(ns.<String> getList("file").get(0).toString()));
-    			variableNames.getVariablesNames();
+    			VTF variableNames = new VTF(new File(ns.<String> getList("file").get(0).toString()));
+    			variableNames.getData();
     			break;
     		case "coordinates":
     			Results coordinates = new Results(new File(ns.<String> getList("file").get(0).toString()));
