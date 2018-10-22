@@ -2,14 +2,11 @@ package traitement;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -57,8 +54,17 @@ public class Results {
     			ArrayList<Integer> selection = new ArrayList<>();
         		String [] selector = ns.get("selector").toString().split(",");
         		selection.addAll(IntStream.range(0, selector.length).filter(i->!selector[i].isEmpty()).mapToObj(i->Integer.parseInt(selector[i])).collect(Collectors.toList()));
-        		@SuppressWarnings("unused")
-        		Results Data = new Results(new File(ns.get("folder").toString()),Integer.parseInt(ns.get("reference").toString()),selection);
+        		//@SuppressWarnings("unused")
+        		File[] files = new File(ns.get("folder").toString()).listFiles(Results.vtfFilter);
+        		Arrays.sort(files,Results.sensorOrder);
+        		for(File file:files){
+        			
+        			VTF data = new VTF(file);
+        			data = new VTF(file,selection);
+
+        			data.save(file.getParent()+"\\"+file.getName()+".csv");
+        		}
+        		//Results Data = new Results(new File(ns.get("folder").toString()),Integer.parseInt(ns.get("reference").toString()),selection);
     			break;
     		case "variablesNames":
     			Results variableNames = new Results(new File(ns.get("folder").toString()));
