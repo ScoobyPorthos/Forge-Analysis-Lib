@@ -65,7 +65,11 @@ public class Results {
         		File[] files = new File(ns.get("folder").toString()).listFiles(Results.vtfFilter);
         		Arrays.sort(files,Results.sensorOrder);
         		
+<<<<<<< HEAD
         		ExecutorService service = Executors.newFixedThreadPool(Integer.parseInt(ns.get("thread").toString()));
+=======
+        		ExecutorService service = Executors.newFixedThreadPool(10);
+>>>>>>> 0ebb1a01f16e097235964c7f6bebfd111ccbad98
                 IntStream.range(0, files.length).forEach(i -> service.submit(() -> {
                 	
                 	System.out.println("Task ID : " + i + " started by "+ Thread.currentThread().getName()+"...");
