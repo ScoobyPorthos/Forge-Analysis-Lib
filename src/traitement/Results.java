@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class Results {
 
 	public static void main(String[] args) {
 		
+
 		ArgumentParser parser = ArgumentParsers.newFor("Results").build()
                 .defaultHelp(true)
                 .description("Extract Data from a VTF file into a separate file");
@@ -36,10 +39,14 @@ public class Results {
 		parser.addArgument("-s", "--selector")
 				.setDefault(Arguments.SUPPRESS)
                 .help("field ID to extact with comma separated value ([-a Data] need to be selected)");
+		
+		parser.addArgument("--thread")
+			.setDefault(10)
+	        .help("thread number used to process the data");
         
-		parser.addArgument("-r", "--reference")
+		/*parser.addArgument("-r", "--reference")
 			.setDefault(Arguments.SUPPRESS)
-			.help("field ID to take as reference ([-a Data] need to be selected)");
+			.help("field ID to take as reference ([-a Data] need to be selected)");*/
         
 		parser.addArgument("folder")
                 .help("Folder hosting the VTF Collection");
@@ -57,13 +64,26 @@ public class Results {
         		//@SuppressWarnings("unused")
         		File[] files = new File(ns.get("folder").toString()).listFiles(Results.vtfFilter);
         		Arrays.sort(files,Results.sensorOrder);
-        		for(File file:files){
+        		
+        		ExecutorService service = Executors.newFixedThreadPool(10);
+                IntStream.range(0, files.length).forEach(i -> service.submit(() -> {
+                	
+                	System.out.println("Task ID : " + i + " started by "+ Thread.currentThread().getName()+"...");
+                	VTF data = new VTF(files[i]);
+        			data = new VTF(files[i],selection);
+        			data.save(files[i].getParent()+"\\"+files[i].getName()+".csv");
+        			System.out.println("Task ID : " + i + " terminated");
+        			
+                }));
+        		service.shutdown();
+                
+        		/*for(File file:files){
         			
         			VTF data = new VTF(file);
         			data = new VTF(file,selection);
 
         			data.save(file.getParent()+"\\"+file.getName()+".csv");
-        		}
+        		}*/
         		//Results Data = new Results(new File(ns.get("folder").toString()),Integer.parseInt(ns.get("reference").toString()),selection);
     			break;
     		case "variablesNames":
