@@ -103,7 +103,7 @@ public class VTF implements Cloneable{
 		try {
 			inputStream = new FileInputStream(file.getAbsolutePath());
 			sc = new Scanner(inputStream, "UTF-8");
-		    
+		    long sum = inputStream.getChannel().position();
 		    int i = 0;
 		    int action = 0;
 		    while (sc.hasNextLine()){
@@ -117,6 +117,21 @@ public class VTF implements Cloneable{
 					this.exctractSubject(line.trim());
 					break;
 				case 3:
+					System.out.println(sum-inputStream.getChannel().position());
+					
+					String[] cell = line.split(" ");
+					
+					for(String name:cell)
+						System.out.println(name.length());
+					
+					float test = IntStream.range(0,line.split("\t").length)
+					.filter(a -> this.selection.contains(a+1) && !line.split("\t")[a].isEmpty())
+					.map(a ->line.split("\t")[a].trim().length())
+					.sum();
+					
+					System.out.println(test);
+					
+					System.exit(1);
 					if(this.selection.isEmpty())
 						content.put(i, new Line(i,line.trim(),this.subjects));
 					else
@@ -129,12 +144,16 @@ public class VTF implements Cloneable{
 				else if(line.trim().equals("%VARIABLE_NAMES"))
 					action = 2;
 				else if(line.trim().equals("%DATA"))
+				{
 					action = 3;
+				}
 				else if(action !=3)
 					action = 0;
-				
 		    }
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}

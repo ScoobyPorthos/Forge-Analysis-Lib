@@ -16,26 +16,35 @@ import java.util.stream.IntStream;
 public class trash {
 
 	public static void main(String[] args) throws IOException {
-		String folder ="G:\\Mon Drive\\LFW\\McAndrew 27 6750\\Firction_FWP_FD#4\\FixCenter";
+		String folder ="G:\\Mon Drive\\LFW\\McAndrew 27 6750\\Friction_DRX\\Top";
 		int start_file_num = 1;
 			
 		File[] dirFiles = trash.loadFiles(new File(folder));
 		List<File>files = IntStream.range(start_file_num-1, dirFiles.length).mapToObj(i -> dirFiles[i]).collect(Collectors.toList());
 		
-		String res = files.stream().map(file -> trash.getLine(file, 30691-1,288, Arrays.asList(3,5,7))).collect(Collectors.joining("\n"));
+		String res = files.stream().map(file -> trash.getLine(file, 30681-1,466, Arrays.asList(3,5))).collect(Collectors.joining("\n"));
 		
 		FileWriter fr;
 		try {
-			fr = new FileWriter(folder+"\\..\\End_Temperature.csv");
+			fr = new FileWriter(folder+"\\..\\End_PositionTop.csv");
 			fr.write("X,Z,T");
 	    	fr.write("\n");
 	    	fr.write(res);
 	        fr.close();
-	        System.out.println(folder+"\\..\\End_Temperature.csv");
+	        System.out.println(folder+"\\..\\End_PositionTop.csv");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}    
 		
+		
+		/*String file =".\\VTF\\hcenterline\\billet_hcenterline1.vtf";
+		int start = 699;
+		
+		FileInputStream inputStream = new FileInputStream(new File(file));
+	    inputStream.skip(718+1+4*11+6*3+1);
+	    Scanner sc = new Scanner(inputStream, "UTF-8");
+	    System.out.println(inputStream.rea);
+		*/
 	}
 	
 	static File[] loadFiles(File dir) {
@@ -73,18 +82,17 @@ public class trash {
 		
 		String res = "";
 		
-		System.out.println("Reading "+file.getName()+" ...");
-		
 		
 		FileInputStream inputStream = null;
 		Scanner sc = null;
 		try {
 		    inputStream = new FileInputStream(file.getAbsolutePath());
-		    inputStream.skip((goto_line-1)*(lineLength+1));
+		    inputStream.skip(inputStream.available()-lineLength);
 		    sc = new Scanner(inputStream, "UTF-8");
-		    while (sc.hasNextLine()) {
+		    if (sc.hasNextLine()) {
 		        String[] line = sc.nextLine().split("\\t");
 		        res = IntStream.range(0, line.length).filter(a->selection.contains(a+1)).mapToObj(a-> line[a].trim()).collect(Collectors.joining(","));
+		        System.out.println(file.getName()+" => "+ res);
 		    }
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
