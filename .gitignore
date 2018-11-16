@@ -1,10 +1,12 @@
 # Unwanted File & Working file #
 ################################
 /bin/
+/.metadata/*
+/.settings/*
 /data/*
 /META-INF/*
 /VTF/*
-
+/src/trash.java
 
 # Unwanted File type #
 ######################
@@ -14,4 +16,4 @@
 *.csv
 *.poly
 *.unv
-/src/
+*.classpath
