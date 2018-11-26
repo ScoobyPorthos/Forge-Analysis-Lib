@@ -1,11 +1,9 @@
 package parseUNV;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 
 public class Field {
 	
@@ -13,39 +11,47 @@ public class Field {
 	public String property="";
 	private String name;
 	
-	private HashMap<Integer,ArrayList<String>> values = new HashMap<>();
+	public enum Type {UNV,CSV};
 	
-	Field (ArrayList<String> container)
+	private List<List<String>> values = new ArrayList<>();
+	
+	Field (Type containerType,ArrayList<String> container)
 	{
-		int i = 0;
-		String last_line="";
-		
-		for(String line : container)
-		{
-			if(i<13)
-			{
-				if(i==0)
-					this.idField = Integer.parseInt(line.trim());
-				else if(i==1)
-					this.name = line.trim();
-				
-				this.property += line+"\n"; 
-			}
-			else
-			{
-				if(i%2==0)
-				{
-					String[] data = (last_line+" "+line.trim()).split(" ");
-					List<String> work_line = IntStream.range(0,data.length).filter(a->data[a].trim().length()>0).mapToObj(a->data[a].trim()).collect(Collectors.toList());
-					this.values.put(Integer.parseInt(work_line.get(0)),(ArrayList<String>)IntStream.range(0,work_line.size()).filter(a->a>0).mapToObj(a->work_line.get(a)).collect(Collectors.toList()));
-				}
-				last_line = line.trim();
-			}
-			
-			i++;
+		switch (containerType) {
+		case UNV:
+			this.readFromUNV(container);
+			break;
+		case CSV:
+			this.readFromCSV(container);
+			break;
+		default:
+			System.out.println("unknown container type");
+			break;
 		}
 	}
-	public void setValues(HashMap<Integer, ArrayList<String>> values) {
+	private void readFromUNV(ArrayList<String> container) {
+		
+		ArrayList<String[]>lines = container.stream().skip(13).filter(e->!Objects.equals(e,"")).collect(
+				() -> new ArrayList<>(), 
+		        (acc, next) -> {
+		            if(acc.isEmpty()) {
+		                acc.add(new String[] {next, null});
+		            }else if(acc.get(acc.size() - 1)[1]==null) {
+		            	acc.get(acc.size() - 1)[1] = next;
+		            }else{
+		                acc.add(new String[] {next, null});
+		            }
+		        },
+		        ArrayList::addAll
+		    );
+			
+		if(lines.size()>0)
+			this.values = lines.stream().map(UNV.splitUNV).collect(Collectors.toList());
+	}
+	private void readFromCSV(ArrayList<String> container) {
+		this.values = container.stream().map(UNV.splitCSV).collect(Collectors.toList());
+	}
+	public void setValues(List<List<String>> values) {
 		this.values = values;
 	}
 	public void setIdField(int idField) {
@@ -63,9 +69,9 @@ public class Field {
 	}
 	@Override
 	public String toString() {
-		return this.values.entrySet().stream().map(entry -> entry.getKey().toString()+";"+(String) entry.getValue().stream().map(Object::toString).collect(Collectors.joining(";"))).collect(Collectors.joining("\n"));
+		return this.values.stream().map(entry -> entry.stream().collect(Collectors.joining(";"))).collect(Collectors.joining("\n"));
 	}
-	public HashMap<Integer,ArrayList<String>> getValues() {
+	public List<List<String>> getValues() {
 		return this.values;
 	}
 	public String toUNV() {
@@ -73,10 +79,10 @@ public class Field {
 		switch(this.idField)
 		{
 		case 0:
-			res += this.values.entrySet().stream().map(entry -> "\t"+entry.getKey().toString()+" \n\t"+(String) entry.getValue().stream().map(Object::toString).collect(Collectors.joining("\t"))).collect(Collectors.joining("\n"));
+			res += this.values.stream().map(entry -> "\t"+ entry.get(0) +" \n\t"+entry.stream().skip(1).collect(Collectors.joining("\t"))).collect(Collectors.joining("\n"));
 			break;
 		case 1:
-			res += this.values.entrySet().stream().map(entry -> "\t"+entry.getKey().toString()+" \t 6 \n\t"+(String) entry.getValue().stream().map(Object::toString).collect(Collectors.joining("\t"))).collect(Collectors.joining("\n"));
+			res += this.values.stream().map(entry -> "\t"+entry.get(0)+" \t 6 \n\t"+entry.stream().skip(1).collect(Collectors.joining("\t"))).collect(Collectors.joining("\n"));
 			break;
 		default:
 			System.out.println("Unknown Type ! ");

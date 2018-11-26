@@ -2,24 +2,25 @@ package parseUNV;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import parseUNV.Field.Type;
 
 
 public class UNV {
@@ -32,6 +33,16 @@ public class UNV {
 	
 	public ArrayList<Field> fields = new ArrayList<>();
 	
+	public static Function<String, List<String>> splitCSV = (line) -> {
+  	  String[] p = line.split(",");
+  	  return Arrays.asList(p);
+  	};
+  	
+  	public static Function<String[], List<String>> splitUNV = (line) -> {
+    	  String[] p = (line[0]+" "+line[1]).split(" ");
+    	  return Arrays.asList(p);
+    	};
+	
 	public static void main(String[] args) {
 		
 		ArgumentParser parser = ArgumentParsers.newFor("UNV parsing tool").build()
@@ -39,20 +50,21 @@ public class UNV {
                 .description("Read and extract data from an UNV File");
         parser.addArgument("-a", "--action")
                 .help("What do you want to do ???")
-                .choices("mesh", "replace", "extract","field")
+                .choices("mesh", "csv2unv", "data","variablesNames")
                 .setDefault("mesh");
-        parser.addArgument("-r", "--replace-ID")
-        		.help("Replace the Field ID x by the data in the replacing file")
-        		.setDefault(Arguments.SUPPRESS);
-        parser.addArgument("--replace-file")
+        parser.addArgument("-f", "--field")
+        		.help("Export a CSV file to an UNV file : 0 for Temperature and 1 for Stress")
+        		.choices("0","1")
+        		.setDefault(false);
+        parser.addArgument("--input-file")
 				.help("Replace the Field ID x by the data in the replacing file")
-				.setDefault(Arguments.SUPPRESS);
-        parser.addArgument("-o","--output-name")
+				.setDefault(false);
+        parser.addArgument("-o","--output")
 				.help("Output name for the new unv file")
-				.setDefault(Arguments.SUPPRESS);
-        parser.addArgument("-d", "--data-ID")
+				.setDefault(false);
+        parser.addArgument("-d", "--data")
 				.help("Retrieve de data Field #ID into a CSV file")
-				.setDefault(Arguments.SUPPRESS);
+				.setDefault(false);
         parser.addArgument("unvFile")
                 .help("path to the unvFile");
 
@@ -64,44 +76,48 @@ public class UNV {
             System.exit(1);
         }
 		
-		File f = new File(ns.get("unvFile").toString());
-		UNV data = new UNV(f);
-				
+        File f = new File(ns.get("unvFile").toString());;
+        UNV data;	
+        
 		switch(ns.get("action").toString())
 		{
 		case "mesh":
+			
+			data = new UNV(f);
+			
 			System.out.println("Export Mesh from "+ns.get("unvFile").toString());
 			data.writeCoordinate();
 			data.writeElements();
-			break;
-		case "replace":
 			
-			CopyOption[] options = new CopyOption[]{
-				      StandardCopyOption.REPLACE_EXISTING,
-				      StandardCopyOption.COPY_ATTRIBUTES
-				    }; 
-			try {
-				Files.copy(Paths.get(f.getPath()), Paths.get(f.getParent()+"\\"+ns.get("output-name").toString()+".unv"),options);
-				System.out.println(f.getParent()+"\\"+ns.get("output-name").toString()+".unv has been created");
-			} catch (IOException e) {
-				e.printStackTrace();
+		break;
+		case "csv2unv":
+			
+			if(Objects.equals(ns.get("output").toString(), "false") || Objects.equals(ns.get("input_file").toString(), "false") || Objects.equals(ns.get("field").toString(), "false")) {
+				System.out.println("Missing Arguments .... [-a replace] requires [-o] [--input-file] [-r]");
+				System.exit(1);
 			}
+
+			System.out.println("Replace field ID "+ns.get("field").toString()+" from "+ns.get("unvFile").toString()+" by "+ns.get("input_file").toString());
 			
-			System.out.println("Replace field ID "+ns.get("replace_ID").toString()+" from "+ns.get("unvFile").toString()+" by "+ns.get("replace_file").toString());
-			data.replaceField(Integer.parseInt(ns.get("replace_ID").toString()),ns.get("replace_file").toString());
-			data.writeUNV(ns.get("output-name").toString());
-			break;
-		case "extract": // Retrieve data into an CSV file -d file ID
+			UNV.csv2unv(ns.get("input_file").toString(), Integer.parseInt(ns.get("field").toString()),ns.get("output").toString());
 			
-			System.out.println("Exporting data ID "+ns.get("data_ID").toString()+" from "+ns.get("unvFile").toString());
-			if(ns.get("data_ID").toString().split(",").length>1)
-				data.writeData(ns.get("data_ID").toString().split(","));
+
+		break;
+		case "data": // Retrieve data into an CSV file -d file ID
+			 
+			data = new UNV(f);
+			
+			System.out.println("Exporting data ID "+ns.get("data").toString()+" from "+ns.get("unvFile").toString());
+			if(ns.get("data").toString().split(",").length>1)
+				data.writeData(ns.get("data").toString().split(","));
 			else
-				data.writeData(Integer.parseInt(ns.get("data_ID").toString()));
-			break;
-		case "field":
+				data.writeData(Integer.parseInt(ns.get("data").toString()));
+		
+		break;
+		case "variablesNames":
+			data = new UNV(f);
 			System.out.println(data.getListField());
-			break;
+		break;
 		default:
 			System.out.println("Sorry unknown action. Please refer to the help with -h");
 			break;
@@ -117,11 +133,14 @@ public class UNV {
 	}
 	
     private void readFile(){ 
-   	 FileReader fr;
-		try {
-			fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
-		  
+   	 
+	   	FileInputStream inputStream = null;
+		Scanner sc = null;
+   	 
+		try {		
+			inputStream = new FileInputStream(file.getAbsolutePath());
+			sc = new Scanner(inputStream, "UTF-8");
+			
 			@SuppressWarnings("unused")
 			int lineNumber = 0;
 		    
@@ -131,17 +150,15 @@ public class UNV {
 		    ArrayList<String> container = new ArrayList<>();
 		    
 		    String last_line = "";
-		    //int key = 0;
-		    
-		    
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
+
+		    while (sc.hasNextLine()){
+		    	String line = sc.nextLine();
 				if(line.trim().equals("-1"))
 					delimeter++;
 				
 				if(delimeter%2==1 && last_line.equals("-1"))
 				{	
 					active_label = Integer.parseInt(line.trim());	
-					//key = lineNumber;
 				}
 				else if(delimeter%2==0)
 				{
@@ -202,7 +219,7 @@ public class UNV {
 						break;
 					case 2414 :
 						//System.out.println("Field");
-						this.fields.add(new Field(container));
+						this.fields.add(new Field(Type.UNV,container));
 						break;
 					default:
 						System.out.println(active_label+" is not supported yet !");
@@ -219,32 +236,15 @@ public class UNV {
 				last_line = line.trim();
 				lineNumber++;
 		    }
-		        br.close();
-		        fr.close();
+
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
    }
     
-    public void writeUNV(String simName)
+    public void writeUNV(String simName) //TODO DELETE and ReWrite
     {
-    	FileWriter fr;
-    	try {
-    		String name = this.file.getParent()+"\\stress4"+simName+".unv";
-			fr = new FileWriter(name);
-			fr.write(this.fields.get(1).toUNV());
-	        fr.close();
-	        System.out.println(name+" written");
-	        name = this.file.getParent()+"\\temp4"+simName+".unv";
-			fr = new FileWriter(name);
-			fr.write(this.fields.get(0).toUNV());
-	        fr.close();
-	        System.out.println(name+" written");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    	System.out.println(this.fields.get(1).toUNV());
     }
     public void writeCoordinate()
     {
@@ -292,33 +292,41 @@ public class UNV {
     	for(String id:ID)
     		this.writeData(Integer.parseInt(id));
     }
-    public void replaceField(int label, String file)
-    {
-    	FileReader fr;
-    	HashMap<Integer,ArrayList<String>> content = new HashMap<>();
+    
+    public static void csv2unv(String csvfile,int fieldID,String output) {
     	
-		try {
-			fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
-		    int  a = 0;
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				if(a>0)
-				{
-					String[] data = line.trim().split(",");
-					content.put(a,(ArrayList<String>)IntStream.range(0,data.length).filter(i->data[i].trim().length()>0).mapToObj(i->data[i].trim()).collect(Collectors.toList()));
+    	 ArrayList<String> inputList = new ArrayList<String>();
+    	 
+    	    try{
+    	      File inputF = new File(csvfile);
+    	      InputStream inputFS = new FileInputStream(inputF);
+    	      BufferedReader br = new BufferedReader(new InputStreamReader(inputFS));
+
+    	      inputList = (ArrayList<String>) br.lines().skip(1).collect(Collectors.toList());
+    	      
+    	      Field csvField = new Field(Type.CSV,inputList);
+    	      csvField.setIdField(fieldID);
+    	      csvField.property = "CSV2UNV File convertion from "+csvfile+ " to be pasted where need be in the original UNV file\n";
+    	      
+    	      
+    	      FileWriter fr;
+		      try {
+					fr = new FileWriter(output);
+					fr.write(csvField.toUNV());
+			        fr.close();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				a++;
-			}
-	        br.close();
-	        fr.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	this.fields.get(label).setValues(content);
+		    	System.out.println(output+" written");
+    	      
+    	      br.close();
+    	    } catch (IOException e) {
+    	    	e.printStackTrace();
+    	    }
     	
     }
+    
+    
 	public String getListField() {
 		return this.fields.stream().map(field -> field.getIdField()+"-"+field.getName()).collect(Collectors.joining("\n"));
 	}
