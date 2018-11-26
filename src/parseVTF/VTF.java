@@ -85,7 +85,6 @@ public class VTF{
             			System.out.println("Task ID : " + i + " terminated");
             			
                     }));
-            		service.shutdown();
     			}
     			else if(ns.getBoolean("directories"))
     			{
@@ -109,10 +108,11 @@ public class VTF{
                 			System.out.println("Task ID : " + i + " terminated");
                 			
                         }));
-                		service.shutdown();
+                		
     				}
     				System.out.println();
     			}
+    			service.shutdown();
     			break;
     		case "variablesNames":
     			if(ns.getBoolean("files")) {
