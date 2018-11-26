@@ -202,7 +202,7 @@ public class VTF{
 	      InputStream inputFS = new FileInputStream(this.file);
 	      BufferedReader br = new BufferedReader(new InputStreamReader(inputFS));
 	      this.subjects = br.lines().skip(7).findFirst().map(this.splitVTFstring).get();
-	      this.content =  br.lines().skip(9).map(this.splitVTFnum).collect(Collectors.toList());
+	      this.content =  br.lines().skip(1).map(this.splitVTFnum).collect(Collectors.toList());
 	      br.close();
 	    } catch (IOException e) {
 	    	e.printStackTrace();
