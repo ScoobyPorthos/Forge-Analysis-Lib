@@ -76,15 +76,6 @@ public class Results {
         			
                 }));
         		service.shutdown();
-                
-        		/*for(File file:files){
-        			
-        			VTF data = new VTF(file);
-        			data = new VTF(file,selection);
-
-        			data.save(file.getParent()+"\\"+file.getName()+".csv");
-        		}*/
-        		//Results Data = new Results(new File(ns.get("folder").toString()),Integer.parseInt(ns.get("reference").toString()),selection);
     			break;
     		case "variablesNames":
     			Results variableNames = new Results(new File(ns.get("folder").toString()));
@@ -111,7 +102,7 @@ public class Results {
 	private ArrayList<Integer> selection = new ArrayList<>();
 	
 	
-	private static FilenameFilter vtfFilter = new FilenameFilter() {
+	public static FilenameFilter vtfFilter = new FilenameFilter() {
 		public boolean accept(File dir, String name) {
 			return name.toLowerCase().endsWith(".vtf");
 		}
