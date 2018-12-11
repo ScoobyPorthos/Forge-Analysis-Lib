@@ -13,8 +13,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -40,7 +43,7 @@ public class UNV {
   	
   	public static Function<String[], List<String>> splitUNV = (line) -> {
     	  String[] p = (line[0]+" "+line[1]).split(" ");
-    	  return Arrays.asList(p);
+    	  return IntStream.range(0, p.length).filter(i->!Objects.equals(p[i].trim(),"")).mapToObj(i->p[i].trim()).collect(Collectors.toList());
     	};
 	
 	public static void main(String[] args) {
@@ -274,7 +277,7 @@ public class UNV {
     }
     public void writeData(int ID)
     {
-    	System.out.println(this.fields.get(ID).property);
+    	System.out.println(this.fields.get(ID).getName());
     	FileWriter fr;
     	String name = this.file.getPath()+"_Data"+ID+".csv";
     	try {
@@ -289,8 +292,15 @@ public class UNV {
     }
     public void writeData(String[] ID)
     {
-    	for(String id:ID)
-    		this.writeData(Integer.parseInt(id));
+    	ExecutorService service = Executors.newFixedThreadPool(10);
+    	IntStream.range(0, ID.length).forEach(i -> service.submit(() -> {
+        	
+        	System.out.println("Task ID : " + i + " started by "+ Thread.currentThread().getName()+"...");
+        	this.writeData(Integer.parseInt(ID[i]));
+			System.out.println("Task ID : " + i + " terminated");
+			
+        }));
+    	service.shutdown();
     }
     
     public static void csv2unv(String csvfile,int fieldID,String output) {

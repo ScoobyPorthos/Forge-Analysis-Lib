@@ -90,26 +90,27 @@ public class VTF{
     			{
     				List<String> dirs = ns.getList("inputs");
     				
-    				for(String dir : dirs)
-    				{
-    					System.out.println(dir);
-    					File[] files = new File(dir).listFiles(VTF.vtfFilter);
-    					
-    					IntStream.range(0, files.length).forEach(i -> service.submit(() -> {
+    				ArrayList<File> files = dirs.stream().map(dir->new File(dir).listFiles(VTF.vtfFilter)).collect(
+    						()->new ArrayList<>(),
+    						(acc,next)->{
+    							acc.addAll(IntStream.range(0, next.length).mapToObj(i->next[i]).collect(Collectors.toList()));
+    						},
+    						ArrayList::addAll
+    						);
+    						
+    				System.out.println(files.stream().map(f->f.getPath()).collect(Collectors.joining("\n")));
+
+    				files.forEach(f -> service.submit(() -> {
                         	
-                        	System.out.println("Task ID : " + i + " started by "+ Thread.currentThread().getName()+"...");
+                        	System.out.println("loading "+f.getName()+" ...");
                         	VTF data;
                         	if(selection.isEmpty())
-                        		data = new VTF(files[i]);
+                        		data = new VTF(f);
                         	else
-                        		data = new VTF(files[i],selection);
+                        		data = new VTF(f,selection);
                 			
-                			data.save(files[i].getPath()+".csv");
-                			System.out.println("Task ID : " + i + " terminated");
-                			
+                			data.save(f.getPath()+".csv");	
                         }));
-                		
-    				}
     				System.out.println();
     			}
     			service.shutdown();

@@ -31,15 +31,17 @@ public class Field {
 	}
 	private void readFromUNV(ArrayList<String> container) {
 		
+		this.idField = Integer.parseInt(container.stream().findFirst().get());
+		this.name = container.stream().skip(1).findFirst().get();
 		ArrayList<String[]>lines = container.stream().skip(13).filter(e->!Objects.equals(e,"")).collect(
 				() -> new ArrayList<>(), 
 		        (acc, next) -> {
 		            if(acc.isEmpty()) {
-		                acc.add(new String[] {next, null});
+		                acc.add(new String[] {next.trim(), null});
 		            }else if(acc.get(acc.size() - 1)[1]==null) {
-		            	acc.get(acc.size() - 1)[1] = next;
+		            	acc.get(acc.size() - 1)[1] = next.trim();
 		            }else{
-		                acc.add(new String[] {next, null});
+		                acc.add(new String[] {next.trim(), null});
 		            }
 		        },
 		        ArrayList::addAll
