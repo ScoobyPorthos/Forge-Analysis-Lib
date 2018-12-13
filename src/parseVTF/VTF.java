@@ -16,11 +16,15 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+
+import com.mathworks.engine.*;
+import com.mathworks.matlab.types.*;
 
 public class VTF{
 
@@ -182,6 +186,12 @@ public class VTF{
 		}
 	};
 	
+	public VTF(String file)
+	{
+		this.file = new File(file);
+		this.readFile();
+	}
+	
 	public VTF(File file)
 	{
 		this.file = file;
@@ -212,7 +222,19 @@ public class VTF{
 	public List<String> getSubjects() {
 		return this.subjects;
 	}
-	public void save(String name)
+	public String[] getVariablesNames() {
+		return this.subjects.stream().toArray(String[]::new);
+	}
+	public Double[][] getContent() {
+		
+		Double[][] res = new Double[2][2]; 
+		res[0][0] = 1.;
+		res[0][1] = 2.;
+		res[1][0] = 3.;
+		res[1][1] = 4.;
+		return res;
+	}
+	public String save(String name)
 	{
 		FileWriter fr;
 		try {
@@ -225,6 +247,7 @@ public class VTF{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}    	
+		return name;
 	}
 	public void getData()
 	{
